@@ -12,6 +12,12 @@ const userSchema = new mongoose.Schema(
     shiftTo: { type: String },
     address: { type: String },
     age: { type: Number },
+    wishlist: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Product",
+      },
+    ],
 
     role: {
       type: String,

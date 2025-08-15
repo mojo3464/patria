@@ -39,7 +39,10 @@ export const updateCategory = handlerAsync(async (req, res, next) => {
     },
     { new: true }
   );
-  res.status(200).json({ message: "category updated successfully" });
+  res.status(200).json({
+    message: "category updated successfully",
+    updateCategory: updatedCategory,
+  });
 });
 export const deleteCategory = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -52,11 +55,16 @@ export const deleteCategory = handlerAsync(async (req, res, next) => {
 
   await categoryModel.findByIdAndDelete(id);
 
+  await subCategoryModel.deleteMany({ category: id });
+
+  await productModel.deleteMany({ category: id });
+
   res.status(200).json({ message: "category deleted sucessfully" });
 });
 
 export const getCategories = handlerAsync(async (req, res, next) => {
   const categories = await categoryModel.find();
+
   let data = [];
   for (const category of categories) {
     let obj = {
@@ -78,7 +86,10 @@ export const getCategories = handlerAsync(async (req, res, next) => {
 });
 
 export const getCategoryByid = handlerAsync(async (req, res, next) => {
-  const categories = await categoryModel.findById(req.params.id);
+  const categories = await categoryModel
+    .findById(req.params.id)
+    .populate("subCategories")
+    .populate("products");
   if (!categories) return next(new AppError("category not exist", 404));
 
   res.status(200).json({ message: "success", data: categories });

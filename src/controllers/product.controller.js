@@ -2,6 +2,7 @@ import categoryModel from "../../DataBase/models/category.model.js";
 import orderMdoel from "../../DataBase/models/order.mdoel.js";
 import productModel from "../../DataBase/models/product.model.js";
 import subCategoryModel from "../../DataBase/models/subCategory.model.js";
+import { deleteUploadedFile } from "../services/deleteFile.js";
 import { AppError } from "../utilities/AppError.js";
 import { handlerAsync } from "../utilities/handleAsync.js";
 
@@ -43,13 +44,21 @@ export const addProduct = handlerAsync(async (req, res, next) => {
 
 export const updateProduct = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
+  if (!req.file) return next(new AppError("image is required", 400));
   const foundedProduct = await productModel.findById({ _id: id });
-
   if (!foundedProduct) return next(new AppError("product not found", 404));
 
-  await productModel.findByIdAndUpdate({ _id: id }, req.body);
+  deleteUploadedFile(foundedProduct.image);
 
-  res.status(200).json({ message: "product updated successfully" });
+  const updatedProduct = await productModel.findByIdAndUpdate(
+    { _id: id },
+    { ...req.body, image: req.file.filename },
+    { new: true }
+  );
+
+  res
+    .status(200)
+    .json({ message: "product updated successfully", data: updatedProduct });
 });
 
 export const getProducts = handlerAsync(async (req, res, next) => {
@@ -130,4 +139,17 @@ export const getProductbestSaller = handlerAsync(async (req, res, next) => {
     message: "Best selling product found successfully",
     data: bestSeller,
   });
+});
+
+export const deleteProduct = handlerAsync(async (req, res, next) => {
+  const productId = req.params.productId;
+
+  const product = await productModel.findByIdAndDelete(productId);
+
+  if (!product) {
+    return next(new AppError("Product not found", 404));
+  }
+  res
+    .status(200)
+    .json({ status: "success", message: "Product deleted successfully" });
 });

@@ -13,6 +13,7 @@ import kitchenRotes from "./src/Routes/kitchen.routes.js";
 import orderRoutes from "./src/Routes/order.routes.js";
 import tablesRoutes from "./src/Routes/tables.routes.js";
 import extraRoutes from "./src/Routes/extra.routes.js";
+import wishlistRoutes from "./src/Routes/wishlist.routes.js";
 
 connection();
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/v1/kitchen", kitchenRotes);
 app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/tables", tablesRoutes);
 app.use("/api/v1/products", extraRoutes);
+app.use("/api/v1/wishlists", wishlistRoutes);
 
 // handle foriegn routes
 
@@ -40,7 +42,9 @@ app.all("*", (req, res, next) => {
 //global handle error
 app.use((err, req, res, next) => {
   if (err)
-    return res.status(err.statusCode || 400).json({ message: err.message });
+    return res
+      .status(err.statusCode || 400)
+      .json({ message: err.message, stack: err.stack });
 });
 const myport = process.env.PORT || 5000;
 app.listen(myport, () => {

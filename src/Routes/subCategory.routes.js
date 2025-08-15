@@ -14,6 +14,7 @@ import {
   getSubCategories,
   updateSubCategory,
   getSubCategoriesbyCategory,
+  getSubCategoryByid,
 } from "../controllers/subCategory.controller.js";
 
 const subCategoryRoutes = express.Router();
@@ -26,14 +27,7 @@ subCategoryRoutes.post(
   checkRole(["admin", "operation"]),
   createSubCategory
 );
-subCategoryRoutes.put(
-  "/",
-  multer4server().single("image"),
-  auth(["admin", "operation"]),
-  checkRole(["admin", "operation"]),
-  validate(updateSubCategorySchema),
-  updateSubCategory
-);
+subCategoryRoutes.put("/", multer4server().single("image"), updateSubCategory);
 subCategoryRoutes.delete(
   "/:id",
   auth(["admin", "operation"]),
@@ -51,5 +45,12 @@ subCategoryRoutes.get(
   auth(["admin", "operation", "waiter", "customer"]),
   checkRole(["admin", "operation", "waiter", "customer"]),
   getSubCategoriesbyCategory
+);
+
+subCategoryRoutes.get(
+  "/:id",
+  auth(["admin", "operation", "waiter", "customer"]),
+  checkRole(["admin", "operation", "waiter", "customer"]),
+  getSubCategoryByid
 );
 export default subCategoryRoutes;

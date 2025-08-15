@@ -45,7 +45,10 @@ export const updateSubCategory = handlerAsync(async (req, res, next) => {
     },
     { new: true }
   );
-  res.status(200).json({ message: "subCategory updated successfully" });
+  res.status(200).json({
+    message: "subCategory updated successfully",
+    data: updatedSubCategory,
+  });
 });
 
 export const deleteSubCategory = handlerAsync(async (req, res, next) => {
@@ -60,11 +63,14 @@ export const deleteSubCategory = handlerAsync(async (req, res, next) => {
 
   await subCategoryModel.findByIdAndDelete(id);
 
+  // Delete all products associated with this subcategory
+  await productModel.deleteMany({ subCategory: id });
+
   res.status(200).json({ message: "subcategory deleted sucessfully" });
 });
 
 export const getSubCategories = handlerAsync(async (req, res, next) => {
-  const Subcategories = await subCategoryModel.find();
+  const Subcategories = await subCategoryModel.find().populate("category");
   let arr = [];
   for (const subCat of Subcategories) {
     let obj = { ...subCat.toObject() };
@@ -85,3 +91,14 @@ export const getSubCategoriesbyCategory = handlerAsync(
     res.status(200).json({ message: "success", data: Subcategories });
   }
 );
+
+export const getSubCategoryByid = handlerAsync(async (req, res, next) => {
+  const subCategory = await subCategoryModel
+    .findById(req.params.id)
+    .populate("products")
+    .populate("category");
+
+  if (!subCategory) return next(new AppError("subcategory not exist", 404));
+
+  res.status(200).json({ message: "success", data: subCategory });
+});

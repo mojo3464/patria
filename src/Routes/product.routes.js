@@ -9,7 +9,8 @@ import {
   getProductsbyId,
   getProductsbySub,
   updateProduct,
-  getProductbestSaller
+  getProductbestSaller,
+  deleteProduct,
 } from "../controllers/product.controller.js";
 
 const proudctRoutes = express.Router();
@@ -53,6 +54,13 @@ proudctRoutes.get(
   auth(["admin", "operation", "waiter", "customer"]),
   checkRole(["admin", "operation", "waiter", "customer"]),
   getProductsbyId
+);
+
+proudctRoutes.delete(
+  "/:productId",
+  auth(["admin", "operation", "waiter", "customer"]),
+  checkRole(["admin", "operation", "waiter", "customer"]),
+  deleteProduct
 );
 
 export default proudctRoutes;

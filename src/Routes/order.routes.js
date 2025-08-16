@@ -8,6 +8,7 @@ import {
   revenueMonthly,
   updateOrder,
   updateOrderStatus,
+  getorderByUser,
 } from "../controllers/order.controller.js";
 
 import { validate } from "../middleware/validation/execution.js";
@@ -23,6 +24,13 @@ orderRoutes.post(
   checkRole(["admin", "operation", "waiter", "customer"]),
   validate(createOrderSchema),
   createOrder
+);
+
+orderRoutes.get(
+  "/getbyUser/:id",
+  auth(["admin", "operation", "waiter", "customer"]),
+  checkRole(["admin", "operation", "waiter", "customer"]),
+  getorderByUser
 );
 orderRoutes.put(
   "/:id",

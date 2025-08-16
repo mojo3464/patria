@@ -475,4 +475,18 @@ export const getOrderBYKitchen = handlerAsync(async (req, res, next) => {
     .status(200)
     .json({ message: "order founded successfully", data: newOrder });
 });
-export const getorderByNumber = handlerAsync(async (req, res, next) => {});
+
+export const getorderByUser = handlerAsync(async (req, res, next) => {
+  const orders = await orderMdoel.find({ customer: req.user._id }).populate({
+    path: "items.product",
+    select: "title price image",
+  });
+  if (!orders || orders.length === 0) {
+    return next(new AppError("No orders found for this user", 404));
+  }
+
+  res.status(200).json({
+    message: "Orders found successfully",
+    data: orders,
+  });
+});

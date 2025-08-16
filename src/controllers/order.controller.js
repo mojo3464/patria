@@ -477,7 +477,14 @@ export const getOrderBYKitchen = handlerAsync(async (req, res, next) => {
 });
 
 export const getorderByUser = handlerAsync(async (req, res, next) => {
-  const orders = await orderMdoel.find({ customer: req.user._id }).populate({
+  const { status } = req.query;
+
+  const query = { customer: req.user._id };
+  if (status) {
+    query.status = status;
+  }
+
+  const orders = await orderMdoel.find(query).populate({
     path: "items.product",
     select: "title price image",
   });

@@ -481,6 +481,7 @@ export const getorderByUser = handlerAsync(async (req, res, next) => {
     path: "items.product",
     select: "title price image",
   });
+
   if (!orders || orders.length === 0) {
     return next(new AppError("No orders found for this user", 404));
   }

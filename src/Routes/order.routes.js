@@ -27,7 +27,7 @@ orderRoutes.post(
 );
 
 orderRoutes.get(
-  "/getbyUser/:id",
+  "/getbyUser",
   auth(["admin", "operation", "waiter", "customer"]),
   checkRole(["admin", "operation", "waiter", "customer"]),
   getorderByUser

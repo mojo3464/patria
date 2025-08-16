@@ -37,7 +37,7 @@ proudctRoutes.get(
   getProducts
 );
 proudctRoutes.get(
-  "/best/saller/prodcut",
+  "/bestSeller",
   auth(["admin", "operation", "waiter", "customer"]),
   checkRole(["admin", "operation", "waiter", "customer"]),
   getProductbestSaller

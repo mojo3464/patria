@@ -490,7 +490,7 @@ export const getorderByUser = handlerAsync(async (req, res, next) => {
   });
 
   if (!orders || orders.length === 0) {
-    return next(new AppError("No orders found for this user", 404));
+    return res.status(200).json({ message: "no orders exist", data: orders });
   }
 
   res.status(200).json({

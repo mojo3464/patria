@@ -105,8 +105,7 @@ export const getProductbestSaller = handlerAsync(async (req, res, next) => {
         value: { $sum: { $ifNull: ["$items.quantity", 1] } },
       },
     },
-    { $sort: { value: -1 } },
-    { $limit: 1 }, // Changed from 5 to 1 to get only the top seller
+    { $sort: { value: -1 } }, // Changed from 5 to 1 to get only the top seller
     {
       $lookup: {
         from: "products", // Make sure this matches your actual collection name
@@ -121,27 +120,27 @@ export const getProductbestSaller = handlerAsync(async (req, res, next) => {
         productId: "$_id",
         value: 1,
         name: "$productDetails.title",
-        // image: "$productDetails.image",
+        price: "$productDetails.price",
+        image: "$productDetails.image",
         _id: 0,
       },
     },
   ]);
 
-  // Since we're getting only one product, you might want to return it as a single object
-  let bestSeller = topProductStats[0] || null;
+  const bestSeller = await Promise.all(
+    topProductStats.map(async (item) => {
+      const productDetails = await productModel.findById(item.productId);
 
-  if (bestSeller) {
-    const productDetails = await productModel
-      .findById(bestSeller.productId)
-      .populate("category")
-      .populate("subCategory");
+      return {
+        ...item,
+      };
+    })
+  );
 
-    bestSeller.product = productDetails;
-  }
-
+  const topThree = bestSeller.slice(0, 3);
   res.status(200).json({
     message: "Best selling product found successfully",
-    data: bestSeller,
+    data: topThree,
   });
 });
 

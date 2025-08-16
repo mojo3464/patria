@@ -37,6 +37,10 @@ const productSchema = new mongoose.Schema({
     ref: "kitchen",
     required: true,
   },
+  available: {
+    type: Boolean,
+    default: true,
+  },
   extras: [
     {
       name: {
@@ -59,20 +63,17 @@ productSchema.pre(/^find/, function (next) {
   next();
 });
 
-// After documents are fetched
 productSchema.post(/^find/, async function (docs) {
   if (!this._mongooseOptions || !this._mongooseOptions.isFavouriteFor) return;
 
   const userId = this._mongooseOptions.isFavouriteFor;
   const User = mongoose.model("User");
 
-  // Get wishlist of that user
   const user = await User.findById(userId).select("wishlist");
   if (!user) return;
 
   const wishlistSet = new Set(user.wishlist.map((id) => id.toString()));
 
-  // Add virtual is_favourite for each product
   docs.forEach((doc) => {
     doc._doc.is_favourite = wishlistSet.has(doc._id.toString());
   });

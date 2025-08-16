@@ -25,6 +25,10 @@ const offerSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

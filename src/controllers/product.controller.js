@@ -89,7 +89,7 @@ export const getProductsbyId = handlerAsync(async (req, res, next) => {
 export const getProductsbySub = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
   const products = await productModel
-    .find({ subCategory: id })
+    .find({ subCategory: id }, null, { isFavouriteFor: req.user._id })
     .populate("kitchen");
 
   res

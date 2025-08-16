@@ -4,7 +4,7 @@ import { AppError } from "../utilities/AppError";
 import { handlerAsync } from "../utilities/handleAsync";
 
 export const createOffer = handlerAsync(async (req, res, next) => {
-  const { title, image, description, items, priceAfterDiscount } = req.body;
+  const { title, description, items, priceAfterDiscount } = req.body;
 
   if (!items || items.length === 0) {
     return next(new AppError("At least one product is required", 400));
@@ -20,7 +20,7 @@ export const createOffer = handlerAsync(async (req, res, next) => {
 
   const offer = await offerModel.create({
     title,
-    image,
+    image: req.file.filename,
     description,
     items,
     priceAfterDiscount,
@@ -39,11 +39,55 @@ export const getAllOffer = handlerAsync(async (req, res, next) => {
     return next(new AppError("No offer exist"));
   }
 
-  res
-    .status(200)
-    .json({
-      message: "offers retreived successfully",
-      result: offer.length,
-      data: offer,
-    });
+  res.status(200).json({
+    message: "offers retreived successfully",
+    result: offer.length,
+    data: offer,
+  });
+});
+
+export const deactiveOffer = handlerAsync(async (req, res, next) => {
+  const offerId = req.params.offerId;
+  const offer = await offerModel.findByIdAndUpdate(
+    offerId,
+    { isActive: false },
+    { new: true }
+  );
+  if (!offer) {
+    return next(new AppError("Offer not found", 404));
+  }
+
+  res.status(200).json({ message: "Offer deleted successfully" });
+});
+
+export const activeOffer = handlerAsync(async (req, res, next) => {
+  const offerId = req.params.offerId;
+  const offer = await offerModel.findByIdAndUpdate(
+    offerId,
+    { isActive: true },
+    { new: true }
+  );
+  if (!offer) {
+    return next(new AppError("Offer not found", 404));
+  }
+
+  res.status(200).json({ message: "Offer deleted successfully" });
+});
+
+export const updateOffer = handlerAsync(async (req, res, next) => {
+  const offerId = req.params.offerId;
+  if (!req.file) return next(new AppError("image is required", 400));
+
+  const offer = await offerModel.findByIdAndUpdate(
+    offerId,
+    { ...req.body, image: req.file.filename },
+    {
+      new: true,
+    }
+  );
+  if (!offer) {
+    return next(new AppError("Offer not found", 404));
+  }
+
+  res.status(201).json({ message: "offer updated successfully" });
 });

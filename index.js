@@ -14,6 +14,7 @@ import orderRoutes from "./src/Routes/order.routes.js";
 import tablesRoutes from "./src/Routes/tables.routes.js";
 import extraRoutes from "./src/Routes/extra.routes.js";
 import wishlistRoutes from "./src/Routes/wishlist.routes.js";
+import offerRoutes from "./src/Routes/offer.routes.js";
 
 connection();
 const app = express();
@@ -32,9 +33,9 @@ app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/tables", tablesRoutes);
 app.use("/api/v1/products", extraRoutes);
 app.use("/api/v1/wishlists", wishlistRoutes);
+app.use("/api/v1/offers", offerRoutes);
 
 // handle foriegn routes
-
 app.all("*", (req, res, next) => {
   next(new AppError(`invalid url ${req.originalUrl}`, 404));
 });

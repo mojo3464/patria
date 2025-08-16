@@ -1,7 +1,7 @@
-import offerModel from "../../DataBase/models/offer.model";
-import productModel from "../../DataBase/models/product.model";
-import { AppError } from "../utilities/AppError";
-import { handlerAsync } from "../utilities/handleAsync";
+import offerModel from "../../DataBase/models/product.model.js";
+import productModel from "../../DataBase/models/offer.model.js";
+import { AppError } from "../utilities/AppError.js";
+import { handlerAsync } from "../utilities/handleAsync.js";
 
 export const createOffer = handlerAsync(async (req, res, next) => {
   const { title, description, items, priceAfterDiscount } = req.body;

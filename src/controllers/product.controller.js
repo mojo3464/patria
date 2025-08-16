@@ -63,7 +63,7 @@ export const updateProduct = handlerAsync(async (req, res, next) => {
 
 export const getProducts = handlerAsync(async (req, res, next) => {
   const products = await productModel
-    .find()
+    .find({}, null, { isFavouriteFor: req.user._id })
     .populate("kitchen")
     .populate("category")
     .populate("subCategory");
@@ -78,6 +78,10 @@ export const getProductsbyId = handlerAsync(async (req, res, next) => {
     .populate("kitchen")
     .populate("category")
     .populate("subCategory");
+
+  if (!products) {
+    return next(new AppError("product not found", 404));
+  }
   res
     .status(200)
     .json({ message: "product founded sucessfully", data: products });

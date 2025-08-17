@@ -4,6 +4,7 @@ const router = express.Router();
 import {
   createOffer,
   getAllOffer,
+  getOffer,
   updateOffer,
   activeOffer,
   deactiveOffer,
@@ -11,6 +12,7 @@ import {
 
 import { auth } from "../middleware/auth/auth.js";
 import { checkRole } from "../middleware/auth/roleAuth.js";
+import { multer4server } from "../services/multer.js";
 
 router.get(
   "/",
@@ -21,9 +23,17 @@ router.get(
 
 router.post(
   "/",
+  multer4server().single("image"),
   auth(["admin", "operation", "waiter", "staff"]),
   checkRole(["admin", "operation", "waiter", "staff"]),
   createOffer
+);
+
+router.get(
+  "/:offerId",
+  auth(["admin", "operation", "waiter", "staff"]),
+  checkRole(["admin", "operation", "waiter", "staff"]),
+  getOffer
 );
 
 router.put(

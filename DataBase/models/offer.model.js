@@ -5,7 +5,10 @@ const offerSchema = new mongoose.Schema(
     title: {
       type: String,
       required: [true, "title is required"],
-      unique: true,
+      unique: [
+        true,
+        "An offer with this title already exists. Please choose another one.",
+      ],
     },
     description: {
       type: String,
@@ -15,7 +18,7 @@ const offerSchema = new mongoose.Schema(
       type: String,
       required: [true, "image is required"],
     },
-    priceAftwerDiscount: {
+    priceAfterDiscount: {
       type: Number,
       required: [true, "price after discount is required"],
     },

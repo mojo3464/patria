@@ -394,7 +394,6 @@ export const createOrderFromIngredients = handlerAsync(
         location: location || "",
         totalPrice: parseFloat(totalPrice.toFixed(2)),
         customer: req.user._id,
-        fromApp: true,
       });
 
       // Populate the order for response

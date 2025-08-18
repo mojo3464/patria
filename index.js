@@ -15,6 +15,8 @@ import tablesRoutes from "./src/Routes/tables.routes.js";
 import extraRoutes from "./src/Routes/extra.routes.js";
 import wishlistRoutes from "./src/Routes/wishlist.routes.js";
 import offerRoutes from "./src/Routes/offer.routes.js";
+import ingredientRoutes from "./src/Routes/ingredient.routes.js";
+import customProductRoutes from "./src/Routes/customProduct.routes.js";
 
 connection();
 const app = express();
@@ -34,6 +36,8 @@ app.use("/api/v1/tables", tablesRoutes);
 app.use("/api/v1/products", extraRoutes);
 app.use("/api/v1/wishlists", wishlistRoutes);
 app.use("/api/v1/offers", offerRoutes);
+app.use("/api/v1/ingredients", ingredientRoutes);
+app.use("/api/v1/custom-products", customProductRoutes);
 
 // handle foriegn routes
 app.all("*", (req, res, next) => {

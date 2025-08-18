@@ -11,8 +11,16 @@ const orderSchema = new mongoose.Schema(
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product", // or 'Product' if it's a generic store
-          required: true,
+          ref: "Product",
+        },
+        customProduct: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "CustomProduct",
+        },
+        productType: {
+          type: String,
+          enum: ["regular", "custom"],
+          // required: true,
         },
         quantity: {
           type: Number,
@@ -83,5 +91,20 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Custom validation for items
+orderSchema.pre('validate', function (next) {
+  if (this.items && this.items.length > 0) {
+    for (const item of this.items) {
+      if (item.productType === 'regular' && !item.product) {
+        return next(new Error('Product is required for regular items'));
+      }
+      if (item.productType === 'custom' && !item.customProduct) {
+        return next(new Error('Custom product is required for custom items'));
+      }
+    }
+  }
+  next();
+});
 
 export default mongoose.model("Order", orderSchema);

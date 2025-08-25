@@ -8,6 +8,7 @@ import {
   handleLogin,
   handleRegister,
   handleUpdateUser,
+  contactUs,
 } from "../controllers/user.controller.js";
 import { validate } from "../middleware/validation/execution.js";
 import {
@@ -59,5 +60,12 @@ userRoutes.delete(
   auth(["admin"]),
   checkRole(["admin"]),
   delet_staff
+);
+
+userRoutes.post(
+  "/contactUs",
+  auth(["admin", "customer"]),
+  checkRole(["admin", "customer"]),
+  contactUs
 );
 export default userRoutes;

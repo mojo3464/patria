@@ -44,15 +44,20 @@ export const addProduct = handlerAsync(async (req, res, next) => {
 
 export const updateProduct = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
-  if (!req.file) return next(new AppError("image is required", 400));
+  const ingredients = JSON.parse(req.body.ingredients);
   const foundedProduct = await productModel.findById({ _id: id });
   if (!foundedProduct) return next(new AppError("product not found", 404));
 
-  deleteUploadedFile(foundedProduct.image);
+  let image = foundedProduct.image;
+
+  if (req.file && req.file.filename) {
+    deleteUploadedFile(foundedProduct.image); // delete old one
+    image = req.file.filename;
+  }
 
   const updatedProduct = await productModel.findByIdAndUpdate(
     { _id: id },
-    { ...req.body, image: req.file.filename },
+    { ...req.body, ingredients: ingredients, image: image },
     { new: true }
   );
 
@@ -152,6 +157,8 @@ export const deleteProduct = handlerAsync(async (req, res, next) => {
   if (!product) {
     return next(new AppError("Product not found", 404));
   }
+
+  deleteUploadedFile(product.image);
   res
     .status(200)
     .json({ status: "success", message: "Product deleted successfully" });

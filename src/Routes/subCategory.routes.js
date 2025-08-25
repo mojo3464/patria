@@ -27,7 +27,13 @@ subCategoryRoutes.post(
   checkRole(["admin", "operation"]),
   createSubCategory
 );
-subCategoryRoutes.put("/", multer4server().single("image"), updateSubCategory);
+subCategoryRoutes.put(
+  "/:subCategoryId",
+  multer4server().single("image"),
+  auth(["admin", "operation"]),
+  checkRole(["admin", "operation"]),
+  updateSubCategory
+);
 subCategoryRoutes.delete(
   "/:id",
   auth(["admin", "operation"]),

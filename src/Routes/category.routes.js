@@ -26,11 +26,10 @@ categoryRoutes.post(
   createCategory
 );
 categoryRoutes.put(
-  "/",
+  "/:id",
   multer4server().single("image"),
   auth(["admin", "operation"]),
   checkRole(["admin", "operation"]),
-  validate(updateCategorySchema),
   updateCategory
 );
 categoryRoutes.delete(

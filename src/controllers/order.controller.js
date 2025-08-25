@@ -7,7 +7,9 @@ import tableModel from "../../DataBase/models/Tables.model.js";
 import userModel from "../../DataBase/models/user.model.js";
 
 export const createOrder = handlerAsync(async (req, res, next) => {
-  const { items, orderType, location, table } = req.body;
+  const { items, orderType, location, locationMap, table } = req.body;
+  const location1 =
+    typeof location === "string" ? JSON.parse(location) : location;
   let totalPrice = 0;
   for (const item of items) {
     const product = await productModel.findById({ _id: item.product });
@@ -38,7 +40,8 @@ export const createOrder = handlerAsync(async (req, res, next) => {
     orderType,
     OrderNumber: randomNumber,
     table: table || null,
-    location: location ?? "",
+    location: location1 ?? "",
+    locationMap,
     totalPrice,
     customer: req.user._id,
   });
@@ -49,7 +52,11 @@ export const updateOrder = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
   const orderExist = await orderMdoel.findById({ _id: id });
   if (!orderExist) next(new AppError("order not found", 404));
-  await orderMdoel.findByIdAndUpdate({ _id: id }, req.body);
+  const parseLocation = JSON.parse(req.body.location);
+  await orderMdoel.findByIdAndUpdate(
+    { _id: id },
+    { ...req.body, parseLocation }
+  );
   res.status(200).json({ message: "order updated successfully" });
 });
 export const updateOrderStatus = handlerAsync(async (req, res, next) => {
@@ -116,6 +123,7 @@ export const getAllOrders = handlerAsync(async (req, res, next) => {
     // Find matching customers and tables in parallel
     const [matchingCustomers, matchingTables] = await Promise.all([
       // Replace 'Customer' with your actual customer model
+      userModel.find({ phone: searchRegex }).select("_id").lean(),
       userModel.find({ name: searchRegex }).select("_id").lean(),
       // Replace 'Table' with your actual table model
       tableModel.find({ title: searchRegex }).select("_id").lean(),
@@ -451,29 +459,43 @@ export const revenueMonthly = handlerAsync(async (req, res, next) => {
 
 export const getOrderBYKitchen = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
-
+  console.log;
   const orders = await orderMdoel
-    .find()
+    .find({
+      status: { $ne: "cancelled" },
+      $or: [
+        { "items.product": { $exists: true } },
+        { "items.customProduct": { $exists: true } },
+      ],
+    })
     .populate({
       path: "items.product",
       match: { kitchen: id },
     })
+    .populate({
+      path: "items.customProduct",
+      match: { kitchen: id },
+      populate: {
+        path: "ingredients.ingredient",
+        select: "name",
+      },
+    })
     .populate("table")
-    .lean();
-  const newOrder = orders.map((ele) => {
-    const filterd = ele.items.filter((ele) => ele.product);
+    .lean(); // Filter orders to only include those with items that match the kitchen
+  const filteredOrders = orders
+    .map((order) => ({
+      ...order,
+      items: order.items.filter(
+        (item) =>
+          (item.product && item.product.kitchen?.toString() === id) ||
+          (item.customProduct && item.customProduct.kitchen?.toString() === id)
+      ),
+    }))
+    .filter((order) => order.items.length > 0);
 
-    return { ...ele, items: filterd };
-  });
-
-  const items = newOrder.map((ele) => ele.items);
-  const numberofKitchens = new Set(
-    items.flat().map((ele) => ele.product.kitchen.toString())
-  );
-  console.log(numberofKitchens);
   res
     .status(200)
-    .json({ message: "order founded successfully", data: newOrder });
+    .json({ message: "order founded successfully", data: filteredOrders });
 });
 
 export const getorderByUser = handlerAsync(async (req, res, next) => {

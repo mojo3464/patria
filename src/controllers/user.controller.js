@@ -3,6 +3,8 @@ import { AppError } from "../utilities/AppError.js";
 import { handlerAsync } from "../utilities/handleAsync.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utilities/sendEmail.js";
+
 export const handleRegister = handlerAsync(async (req, res, next) => {
   const { name, email, password, role, phone } = req.body;
 
@@ -154,4 +156,34 @@ export const delet_staff = handlerAsync(async (req, res, next) => {
   await userModel.findByIdAndDelete(id);
 
   res.status(200).json({ message: "user deleted  successfully" });
+});
+
+export const contactUs = handlerAsync(async (req, res, next) => {
+  const { name, email, Note } = req.body;
+
+  // 3- send email
+  const message = `
+New Customer Note Submitted
+
+Name: ${name}
+Email: ${email}
+Note: ${Note || "No note provided"}
+
+Please follow up if needed.
+-- Restaurant App System
+`;
+
+  try {
+    await sendEmail({
+      email: "mohamedelsaid3963@gmail.com",
+      subject: "Customer Note",
+      message,
+    });
+  } catch (err) {
+    return next(new ApiError("Email could not be sent", 500));
+  }
+
+  res
+    .status(200)
+    .json({ status: "Success", message: "Your message sent to support team" });
 });

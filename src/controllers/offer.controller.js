@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import offerModel from "../../DataBase/models/offer.model.js";
 import productModel from "../../DataBase/models/product.model.js";
+import orderMdoel from "../../DataBase/models/order.mdoel.js";
+import { customAlphabet } from "nanoid";
 import { AppError } from "../utilities/AppError.js";
 import { handlerAsync } from "../utilities/handleAsync.js";
 
@@ -111,7 +113,7 @@ export const deactiveOffer = handlerAsync(async (req, res, next) => {
     return next(new AppError("Offer not found", 404));
   }
 
-  res.status(200).json({ message: "Offer deleted successfully" });
+  res.status(200).json({ message: "Offer deactivated successfully" });
 });
 
 export const activeOffer = handlerAsync(async (req, res, next) => {
@@ -125,7 +127,7 @@ export const activeOffer = handlerAsync(async (req, res, next) => {
     return next(new AppError("Offer not found", 404));
   }
 
-  res.status(200).json({ message: "Offer deleted successfully" });
+  res.status(200).json({ message: "Offer activated successfully" });
 });
 
 export const updateOffer = handlerAsync(async (req, res, next) => {
@@ -144,4 +146,92 @@ export const updateOffer = handlerAsync(async (req, res, next) => {
   }
 
   res.status(201).json({ message: "offer updated successfully" });
+});
+
+export const createOrderOffer = handlerAsync(async (req, res, next) => {
+  const { customer, offerId, orderType, location, fromApp = false } = req.body;
+
+  if (!customer || !offerId || !orderType) {
+    return next(
+      new AppError("Customer, offerId, and orderType are required", 400)
+    );
+  }
+
+  // Validate orderType
+  const validOrderTypes = ["delivery", "dine-in", "pickup"];
+  if (!validOrderTypes.includes(orderType)) {
+    return next(
+      new AppError("Order type must be delivery, dine-in, or pickup", 400)
+    );
+  }
+
+  // Validate location for delivery orders
+  if (orderType === "delivery" && !location) {
+    return next(new AppError("Location is required for delivery orders", 400));
+  }
+
+  // Find and validate offer
+  const offer = await offerModel
+    .findById(offerId)
+    .populate("items", "title price");
+
+  if (!offer) {
+    return next(new AppError("Offer not found", 404));
+  }
+
+  if (!offer.isActive) {
+    return next(new AppError("This offer is no longer active", 400));
+  }
+
+  // Generate order number
+  const nanoidNumber = customAlphabet("0123456789", 6);
+  const randomNumber = nanoidNumber();
+
+  const items = offer.items.map((product) => ({
+    product: product._id,
+    productType: "offer",
+    quantity: 1,
+    notes: "",
+    customizations: {
+      extras: [],
+      removals: [],
+      extrasWithPrices: [],
+    },
+    innerStatus: "pending",
+    _id: new mongoose.Types.ObjectId(),
+  }));
+
+  const totalPrice = offer.priceAfterDiscount;
+
+  const orderData = {
+    customer,
+    items,
+    totalPrice,
+    orderType,
+    status: "pending",
+    paymentStatus: "unpaid",
+    OrderNumber: randomNumber,
+    location: orderType === "delivery" ? location : "",
+    fromApp,
+    Offer: offerId,
+  };
+
+  if (req.body.table && orderType === "dine-in") {
+    orderData.table = req.body.table;
+  }
+
+  const order = await orderMdoel.create(orderData);
+
+  const populatedOrder = await orderMdoel
+    .findById(order._id)
+    .populate("customer", "name email")
+    .populate("items.product", "title price image")
+    .populate("table", "title")
+    .populate("Offer", "title description");
+
+  res.status(201).json({
+    success: true,
+    message: "Order created successfully with offer",
+    data: populatedOrder,
+  });
 });

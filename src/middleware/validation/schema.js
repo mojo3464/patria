@@ -152,15 +152,6 @@ export const categorySchema = Joi.object({
 });
 export const updateCategorySchema = Joi.object({
   title: Joi.string().required().min(4).max(50),
-  categoryId: Joi.string()
-    .custom((value, helpers) => {
-      // Check if the categoryId is a valid ObjectId
-      if (!mongoose.Types.ObjectId.isValid(value)) {
-        return helpers.message("Category ID must be a valid ObjectId");
-      }
-      return value;
-    })
-    .required(),
 });
 
 // ################# subCategory #################
@@ -205,7 +196,8 @@ export const updateSubCategorySchema = Joi.object({
 export const createOrderSchema = Joi.object({
   orderType: Joi.string().required().valid("dine-in", "takeaway", "delivery"),
   fromApp: Joi.boolean().optional(),
-  location: Joi.string().optional().allow(""),
+  location: Joi.object().required(),
+  locationMap: Joi.string().required(),
   tableNumber: Joi.string().optional().allow(""),
   table: Joi.string().optional(),
   specialInstructions: Joi.string(),

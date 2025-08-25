@@ -16,6 +16,10 @@ const ingredientSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    image: {
+      type: String,
+      required: true,
+    },
     category: {
       type: String,
       required: true,

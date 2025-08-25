@@ -30,21 +30,25 @@ export const createSubCategory = handlerAsync(async (req, res, next) => {
 });
 
 export const updateSubCategory = handlerAsync(async (req, res, next) => {
-  const { subCategoryId, title, categoryId } = req.body;
-  if (!req.file) return next(new AppError("image is required", 400));
+  const { subCategoryId } = req.params;
+  const { title, categoryId } = req.body;
 
   const foundedSubCategory = await subCategoryModel.findById(subCategoryId);
-  if (!foundedSubCategory) return next(new AppError("category not exist", 404));
-  deleteUploadedFile(foundedSubCategory.image);
+  if (!foundedSubCategory)
+    return next(new AppError("subCategory not exist", 404));
+
+  let image = foundedSubCategory.image;
+  if (req.file) {
+    deleteUploadedFile(foundedSubCategory.image);
+    image = req.file.filename;
+  }
+
   const updatedSubCategory = await subCategoryModel.findByIdAndUpdate(
     subCategoryId,
-    {
-      category: categoryId,
-      title,
-      image: req.file.filename,
-    },
+    { category: categoryId, title, image },
     { new: true }
   );
+
   res.status(200).json({
     message: "subCategory updated successfully",
     data: updatedSubCategory,

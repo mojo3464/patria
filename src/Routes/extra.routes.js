@@ -13,8 +13,8 @@ import { checkRole } from "../middleware/auth/roleAuth.js";
 
 router.get(
   "/:productId/extras",
-  auth(["admin", "operation", "waiter", "staff"]),
-  checkRole(["admin", "operation", "waiter", "staff"]),
+  auth(["admin", "operation", "waiter", "customer", "staff"]),
+  checkRole(["admin", "operation", "waiter", "customer", "staff"]),
   getAllExtras
 );
 

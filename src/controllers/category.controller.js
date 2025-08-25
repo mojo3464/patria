@@ -25,17 +25,23 @@ export const createCategory = handlerAsync(async (req, res, next) => {
     .json({ message: "category creatd successfully", data: newCategory });
 });
 export const updateCategory = handlerAsync(async (req, res, next) => {
-  const { categoryId, title } = req.body;
-  if (!req.file) return next(new AppError("image is required", 400));
+  const id = req.params.id;
+  const { title } = req.body;
 
-  const foundedCategory = await categoryModel.findById(categoryId);
+  const foundedCategory = await categoryModel.findById(id);
   if (!foundedCategory) return next(new AppError("category not exist", 404));
-  deleteUploadedFile(foundedCategory.image);
+
+  let image = foundedCategory.image;
+
+  if (req.file && req.file.filename) {
+    deleteUploadedFile(foundedCategory.image);
+    image = req.file.filename;
+  }
   const updatedCategory = await categoryModel.findByIdAndUpdate(
-    categoryId,
+    id,
     {
       title,
-      image: req.file.filename,
+      image: image,
     },
     { new: true }
   );

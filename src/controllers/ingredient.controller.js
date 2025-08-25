@@ -1,4 +1,5 @@
 import ingredientModel from "../../DataBase/models/ingredient.model.js";
+import { deleteUploadedFile } from "../services/deleteFile.js";
 import { AppError } from "../utilities/AppError.js";
 import { handlerAsync } from "../utilities/handleAsync.js";
 
@@ -9,6 +10,7 @@ export const createIngredient = handlerAsync(async (req, res, next) => {
     name,
     price,
     description,
+    image: req.file.filename,
     category,
     createdBy: req.user._id,
   });
@@ -70,7 +72,19 @@ export const getIngredientById = handlerAsync(async (req, res, next) => {
 // Update ingredient
 export const updateIngredient = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
-  const { name, price, description, category, available, image } = req.body;
+  const { name, price, description, category } = req.body;
+
+  const foundedIngredient = await ingredientModel.findById(id);
+  if (!foundedIngredient) {
+    return next(new AppError("Ingredient not found", 404));
+  }
+
+  let image = foundedIngredient.image;
+
+  if (req.file && req.file.filename) {
+    deleteUploadedFile(foundedIngredient.image);
+    image = req.file.filename;
+  }
 
   const ingredient = await ingredientModel.findByIdAndUpdate(
     id,
@@ -79,15 +93,10 @@ export const updateIngredient = handlerAsync(async (req, res, next) => {
       price,
       description,
       category,
-      available,
-      image,
+      image: image,
     },
     { new: true, runValidators: true }
   );
-
-  if (!ingredient) {
-    return next(new AppError("Ingredient not found", 404));
-  }
 
   res.status(200).json({
     message: "Ingredient updated successfully",
@@ -100,10 +109,11 @@ export const deleteIngredient = handlerAsync(async (req, res, next) => {
   const { id } = req.params;
 
   const ingredient = await ingredientModel.findByIdAndDelete(id);
-
   if (!ingredient) {
     return next(new AppError("Ingredient not found", 404));
   }
+
+  deleteUploadedFile(ingredient.image);
 
   res.status(200).json({
     message: "Ingredient deleted successfully",

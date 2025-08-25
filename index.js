@@ -17,6 +17,7 @@ import wishlistRoutes from "./src/Routes/wishlist.routes.js";
 import offerRoutes from "./src/Routes/offer.routes.js";
 import ingredientRoutes from "./src/Routes/ingredient.routes.js";
 import customProductRoutes from "./src/Routes/customProduct.routes.js";
+import locationRoutes from "./src/Routes/location.routes.js";
 
 connection();
 const app = express();
@@ -38,18 +39,20 @@ app.use("/api/v1/wishlists", wishlistRoutes);
 app.use("/api/v1/offers", offerRoutes);
 app.use("/api/v1/ingredients", ingredientRoutes);
 app.use("/api/v1/custom-products", customProductRoutes);
+app.use("/api/v1/location", locationRoutes);
 
 // handle foriegn routes
 app.all("*", (req, res, next) => {
   next(new AppError(`invalid url ${req.originalUrl}`, 404));
 });
 
-//global handle error
 app.use((err, req, res, next) => {
-  if (err)
-    return res
-      .status(err.statusCode || 400)
-      .json({ message: err.message, stack: err.stack });
+  res.status(err.statusCode || 500).json({
+    success: false,
+    status: err.status || "error",
+    message: err.message || "Something went wrong",
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
 });
 
 const myport = process.env.PORT || 5000;
